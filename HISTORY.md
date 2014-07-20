@@ -1,3 +1,40 @@
+### 0.6.5
+* #115: Highlight *-prefixed code block lines.
+* #110: Enable click navigation when configured.
+* #108: Add `sourceUrl` configuration option ([DanTup](https://github.com/DanTup)).
+* #107: Add blackout mode.
+* #104: Increase default font sizes.
+* #102: Add default fonts to templates.
+
+### 0.6.4
+* #105/106: Support indented source code ([DanTup](https://github.com/DanTup)).
+
+### 0.6.3
+* #101: Make navigation using scroll configurable.
+
+### 0.6.2
+* #77: Enable Matjax for slide notes by keeping notes HTML in DOM.
+* #82: Hide help screen when hitting Escape.
+* #85, #87: No longer operate on escaped HTML.
+* #98: Flatten CSS hierarchy for `remark-slide-content` to ease styling.
+
+### 0.6.1
+* #81: Introduce boilerplate HTML files ([gurjeet](https://github.com/gurjeet)).
+* #83: Always include background colors and images.
+* #91: Bundle Haskell syntax highlighting ([sol](https://github.com/sol)).
+* #92: Use official highlight.js ([nanoant](https://github.com/nanoant)).
+* #96: Add Bower integration ([trumbitta](https://github.com/trumbitta)).
+* Run tests using PhantomJS, which enables running tests on Windows.
+
+### 0.6.0
+* #73: Fix infinite loop issue for cloned views ([peter50216](https://github.com/peter50216)).
+* #71: Make `img { max-with: 100%}` work in Firefox ([obfusk](https://github.com/obfusk)).
+* #69: Assign `remark-fading` class to slide being hidden to allow animated transitions ([freakboy3742](https://github.com/freakboy3742)).
+* #68: Add overlay in presenter mode to indicate paused state ([freakboy3742](https://github.com/freakboy3742)).
+* #67: Make slideshow controller customizable ([freakboy3742](https://github.com/freakboy3742)).
+* #66: Add timer for presentation view ([freakboy3742](https://github.com/freakboy3742)).
+* #64: Expose API endpoints for display functions ([freakboy3742](https://github.com/freakboy3742)).
+
 ### 0.5.9
 * #62: Inherit presenter notes from template slide.
 
@@ -9,7 +46,7 @@
 
 ### 0.5.6
 * #50: Support printing / export to PDF via Save as PDF in Chrome.
-* Extend API: (([gureckis](https://github.com/gureckis)))
+* Extend API: ([gureckis](https://github.com/gureckis))
   * Add `slideshow.pause()` and `slideshow.resume()` for bypassing keyboard navigation.
   * Add `[before|after][Show|Hide]Slide` events.
 

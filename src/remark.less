@@ -5,6 +5,7 @@
 html.remark-container, body.remark-container {
   height: 100%;
   width: 100%;
+  -webkit-print-color-adjust: exact;
 }
 .remark-container {
   background: #d7d8d2;
@@ -76,39 +77,53 @@ html.remark-container, body.remark-container {
   > .bottom {
     vertical-align: bottom;
   }
-
-  .remark-slide-content {
-    background-position: center;
-    background-repeat: no-repeat;
-    display: table-cell;
-    padding: 1em 4em 1em 4em;
-
-    .left {
-      display: block;
-      text-align: left;
-    }
-
-    .center {
-      display: block;
-      text-align: center;
-    }
-
-    .right {
-      display: block;
-      text-align: right;
-    }
-  }
-
-  .remark-slide-number {
-    bottom: 12px;
-    opacity: 0.5;
-    position: absolute;
-    right: 20px;
-  }
 }
+
 .remark-slide-content {
   background-color: #fff;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: table-cell;
+  font-size: 20px;
+  padding: 1em 4em 1em 4em;
+
+  h1 { font-size: 55px; }
+  h2 { font-size: 45px; }
+  h3 { font-size: 35px; }
+
+  .left {
+    display: block;
+    text-align: left;
+  }
+
+  .center {
+    display: block;
+    text-align: center;
+  }
+
+  .right {
+    display: block;
+    text-align: right;
+  }
 }
+
+.remark-slide-number {
+  bottom: 12px;
+  opacity: 0.5;
+  position: absolute;
+  right: 20px;
+}
+
+.remark-code {
+  font-size: 18px;
+}
+.remark-code-line {
+  min-height: 1em;
+}
+.remark-code-line-highlighted {
+  background-color: rgba(255, 255, 0, 0.5);
+}
+
 .remark-visible {
   display: block;
   z-index: 2;
@@ -135,6 +150,7 @@ html.remark-container, body.remark-container {
   right: 0;
   display: none;
   background: #000;
+  z-index: 2;
 }
 
 /*****************/
@@ -177,7 +193,6 @@ html.remark-container, body.remark-container {
   }
 }
 
-
 /********/
 /* Help */
 /********/
@@ -199,10 +214,15 @@ html.remark-container, body.remark-container {
     font-family: Helvetica, arial, freesans, clean, sans-serif;
     font-size: 12pt;
     position: absolute;
-    top: 10%;
+    top: 5%;
     bottom: 10%;
-    left: 10%;
     height: 10%;
+    left: 5%;
+    width: 90%;
+
+    h1 {
+      font-size: 36px;
+    }
 
     td {
       color: white;
@@ -220,6 +240,7 @@ html.remark-container, body.remark-container {
       padding: 3px 6px;
       text-align: center;
       border-radius: 4px;
+      font-size: 14px,
     }
   }
 
@@ -321,6 +342,17 @@ html.remark-container, body.remark-container {
   }
   .remark-notes-area {
     display: block;
+  }
+}
+
+/************/
+/* Blackout */
+/************/
+
+.remark-container.remark-blackout-mode:not(.remark-presenter-mode) {
+  .remark-backdrop {
+    display: block;
+    opacity: 0.99;
   }
 }
 

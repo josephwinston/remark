@@ -1,11 +1,14 @@
 module.exports = Controller;
 
-function Controller (events, slideshowView) {
+function Controller (events, dom, slideshowView, options) {
+  options = options || {};
+
   addApiEventListeners(events, slideshowView);
-  addNavigationEventListeners(events, slideshowView);
+  addMessageEventListeners(events);
+  addNavigationEventListeners(events, dom, slideshowView);
   addKeyboardEventListeners(events);
-  addMouseEventListeners(events);
-  addTouchEventListeners(events);
+  addMouseEventListeners(events, options);
+  addTouchEventListeners(events, options);
 }
 
 function addApiEventListeners(events, slideshowView) {
@@ -22,7 +25,22 @@ function addApiEventListeners(events, slideshowView) {
   });
 }
 
-function addNavigationEventListeners (events, slideshowView) {
+function addMessageEventListeners (events) {
+  events.on('message', navigateByMessage);
+
+  function navigateByMessage(message) {
+    var cap;
+
+    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
+      events.emit('gotoSlide', parseInt(cap[1], 10), true);
+    }
+    else if (message.data === 'toggleBlackout') {
+      events.emit('toggleBlackout');
+    }
+  }
+}
+
+function addNavigationEventListeners (events, dom, slideshowView) {
   if (slideshowView.isEmbedded()) {
     events.emit('gotoSlide', 1);
   }
@@ -33,23 +51,13 @@ function addNavigationEventListeners (events, slideshowView) {
     navigateByHash();
   }
 
-  events.on('message', navigateByMessage);
-
   function navigateByHash () {
-    var slideNoOrName = (window.location.hash || '').substr(1);
+    var slideNoOrName = (dom.getLocationHash() || '').substr(1);
     events.emit('gotoSlide', slideNoOrName);
   }
 
   function updateHash (slideNoOrName) {
-    window.location.hash = '#' + slideNoOrName;
-  }
-
-  function navigateByMessage(message) {
-    var cap;
-
-    if ((cap = /^gotoSlide:(\d+)$/.exec(message.data)) !== null) {
-      events.emit('gotoSlide', parseInt(cap[1], 10));
-    }
+    dom.setLocationHash('#' + slideNoOrName);
   }
 }
 
@@ -97,6 +105,9 @@ function addKeyboardEventListeners (events) {
       case 'k':
         events.emit('gotoPreviousSlide');
         break;
+      case 'b':
+        events.emit('toggleBlackout');
+        break;
       case 'c':
         events.emit('createClone');
         break;
@@ -109,6 +120,7 @@ function addKeyboardEventListeners (events) {
       case 't':
         events.emit('resetTimer');
         break;
+      case 'h':
       case '?':
         events.emit('toggleHelp');
         break;
@@ -117,20 +129,35 @@ function addKeyboardEventListeners (events) {
 }
 
 function removeMouseEventListeners(events) {
-  events.removeAllListeners("mousewheel");
+  events.removeAllListeners('click');
+  events.removeAllListeners('contextmenu');
+  events.removeAllListeners('mousewheel');
 }
 
-function addMouseEventListeners (events) {
-  events.on('mousewheel', function (event) {
-    if (event.wheelDeltaY > 0) {
+function addMouseEventListeners (events, options) {
+  if (options.click) {
+    events.on('click', function (event) {
+      if (event.button === 0) {
+        events.emit('gotoNextSlide');
+      }
+    });
+    events.on('contextmenu', function (event) {
+      event.preventDefault();
       events.emit('gotoPreviousSlide');
-    }
-    else if (event.wheelDeltaY < 0) {
-      events.emit('gotoNextSlide');
-    }
-  });
-}
+    });
+  }
 
+  if (options.scroll !== false) {
+    events.on('mousewheel', function (event) {
+      if (event.wheelDeltaY > 0) {
+        events.emit('gotoPreviousSlide');
+      }
+      else if (event.wheelDeltaY < 0) {
+        events.emit('gotoNextSlide');
+      }
+    });
+  }
+}
 
 function removeTouchEventListeners(events) {
   events.removeAllListeners("touchstart");
@@ -138,12 +165,15 @@ function removeTouchEventListeners(events) {
   events.removeAllListeners("touchmove");
 }
 
-
-function addTouchEventListeners (events) {
+function addTouchEventListeners (events, options) {
   var touch
     , startX
     , endX
     ;
+
+  if (options.touch === false) {
+    return;
+  }
 
   var isTap = function () {
     return Math.abs(startX - endX) < 10;

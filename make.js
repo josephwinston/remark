@@ -4,15 +4,33 @@ require('shelljs/global');
 // Targets
 
 target.all = function () {
-  target.lint();
   target.test();
-  target.bundle();
   target.minify();
+  target.boilerplate();
 };
 
 target.highlighter = function () {
   console.log('Bundling highlighter...');
+
+  rm('-rf', 'vendor/highlight.js');
+  mkdir('-p', 'vendor');
+  pushd('vendor');
+  exec('git clone https://github.com/isagalaev/highlight.js.git');
+  pushd('highlight.js');
+  exec('git checkout tags/8.0');
+  popd();
+  popd();
+
   bundleHighlighter('src/remark/highlighter.js');
+};
+
+target.test = function () {
+  target['lint']();
+  target['bundle']();
+  target['test-bundle']();
+
+  console.log('Running tests...');
+  run('mocha-phantomjs test/runner.html');
 };
 
 target.lint = function () {
@@ -20,20 +38,38 @@ target.lint = function () {
   run('jshint src', {silent: true});
 };
 
-target.test = function () {
-  console.log('Running tests...');
-  run('mocha --recursive test');
-};
-
 target.bundle = function () {
   console.log('Bundling...');
   bundleResources('src/remark/resources.js');
-  run('browserify src/remark.js', {silent: true}).output.to('remark.js');
+  run('browserify src/remark.js', {silent: true}).output.to('out/remark.js');
+};
+
+target['test-bundle'] = function () {
+  console.log('Bundling tests...');
+
+  [
+    "require('should');",
+    "require('sinon');"
+  ]
+    .concat(find('./test')
+      .filter(function(file) { return file.match(/\.js$/); })
+      .map(function (file) { return "require('./" + file + "');" })
+    )
+      .join('\n')
+      .to('_tests.js');
+
+  run('browserify _tests.js', {silent: true}).output.to('out/tests.js');
+  rm('_tests.js');
+};
+
+target.boilerplate = function () {
+  console.log('Generating boilerplate...');
+  generateBoilerplateSingle("boilerplate-single.html");
 };
 
 target.minify = function () {
   console.log('Minifying...');
-  run('uglifyjs remark.js', {silent: true}).output.to('remark.min.js');
+  run('uglifyjs out/remark.js', {silent: true}).output.to('out/remark.min.js');
 };
 
 // Helper functions
@@ -79,6 +115,21 @@ function bundleHighlighter (target) {
     .to(target);
 }
 
+function generateBoilerplateSingle(target) {
+  var resources = {
+        REMARK_MINJS: escape(cat('out/remark.min.js')
+                              // highlighter has a ending script tag as a string literal, and
+                              // that causes early termination of escaped script. Split that literal.
+                              .replace('"</script>"', '"</" + "script>"'))
+      };
+
+  cat('src/boilerplate-single.html.template')
+    .replace(/%(\w+)%/g, function (match, key) {
+      return resources[key];
+    })
+    .to(target);
+}
+
 function mapStyle (map, file) {
   var key = path.basename(file, path.extname(file))
     , tmpfile = path.join(tempdir(), 'remark.tmp')
@@ -98,7 +149,7 @@ function less (file) {
 }
 
 function run (command, options) {
-  var result = exec('node_modules/.bin/' + command, options);
+  var result = exec(pwd() + '/node_modules/.bin/' + command, options);
 
   if (result.code !== 0) {
     if (!options || options.silent) {

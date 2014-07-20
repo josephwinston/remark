@@ -1,10 +1,10 @@
 var sinon = require('sinon')
   , EventEmitter = require('events').EventEmitter
+  , TestDom = require('../test_dom')
   , Controller = require('../../src/remark/controller')
   ;
 
 describe('Controller', function () {
-
   describe('initial navigation', function () {
     it('should naviate to first slide when slideshow is embedded ', function () {
       createController({embedded: true});
@@ -13,7 +13,7 @@ describe('Controller', function () {
     });
 
     it('should naviate by hash when slideshow is not embedded', function () {
-      window.location.hash = '#2';
+      dom.getLocationHash = function () { return '#2'; };
 
       createController({embedded: false});
 
@@ -25,7 +25,7 @@ describe('Controller', function () {
     it('should not navigate by hash when slideshow is embedded', function () {
       createController({embedded: true});
 
-      window.location.hash = '#3';
+      dom.getLocationHash = function () { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.not.be.calledWithExactly('gotoSlide', '3');
@@ -34,7 +34,7 @@ describe('Controller', function () {
     it('should navigate by hash when slideshow is not embedded', function () {
       createController({embedded: false});
 
-      window.location.hash = '#3';
+      dom.getLocationHash = function () { return '#3'; };
       events.emit('hashchange');
 
       events.emit.should.be.calledWithExactly('gotoSlide', '3');
@@ -101,6 +101,17 @@ describe('Controller', function () {
     });
   });
 
+  describe('commands', function () {
+    it('should toggle blackout mode when pressing "b"', function () {
+      events.emit('keypress', {which: 98});
+      events.emit.should.be.calledWithExactly('toggleBlackout');
+    });
+
+    beforeEach(function () {
+      createController();
+    });
+  });
+
   describe('custom controller', function () {
     it('should do nothing when pressing page up', function () {
       events.emit('keydown', {keyCode: 33});
@@ -114,13 +125,14 @@ describe('Controller', function () {
   });
 
   var events
+    , dom
     , controller
     ;
 
   function createController (options) {
     options = options || {embedded: false};
 
-    controller = new Controller(events, {
+    controller = new Controller(events, dom, {
       isEmbedded: function () { return options.embedded; }
     });
   }
@@ -128,6 +140,8 @@ describe('Controller', function () {
   beforeEach(function () {
     events = new EventEmitter();
     sinon.spy(events, 'emit');
+
+    dom = new TestDom();
   });
 
   afterEach(function () {
